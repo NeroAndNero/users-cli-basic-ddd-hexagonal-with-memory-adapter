@@ -4,10 +4,13 @@
  */
 package com.jcaa.udec.collections.domain.core.exception;
 
+import com.jcaa.udec.collections.domain.core.valueobject.ProyectoId;
 /**
  *
  * @author ASUS
  */
-public class ProyectoNoEncontradoException {
-    
+public class ProyectoNoEncontradoException extends RuntimeException {
+    public ProyectoNoEncontradoException(ProyectoId id) {
+        super("No existe un proyecto con el código: " + id);
+    }    
 }

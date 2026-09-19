@@ -4,10 +4,13 @@
  */
 package com.jcaa.udec.collections.domain.core.exception;
 
+import com.jcaa.udec.collections.domain.core.valueobject.ProyectoId;
 /**
  *
  * @author ASUS
  */
-public class ProyectoYaExisteException {
-    
+public class ProyectoYaExisteException extends RuntimeException {
+    public ProyectoYaExisteException(ProyectoId id) {
+        super("Ya existe un proyecto con el código: " + id);
+    }    
 }
