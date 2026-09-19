@@ -102,3 +102,17 @@ Debes instalar **diff-cover** que es una utilidad desarrollando sobre Python.
 ```bash
 mvn org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass=com.jcaa.udec.Main
 ```
+## Entidad Proyecto (CEA)
+
+Además de Usuario, la aplicación gestiona proyectos con operaciones CRUDL:
+
+1. Crear un proyecto.
+2. Buscar un proyecto por código.
+3. Actualizar un proyecto.
+4. Eliminar un proyecto.
+5. Listar los proyectos registrados.
+
+Atributos: código, nombre en clave, denominación comercial, fecha de inicio,
+fecha de fin, estado (PLANIFICADO, EN_CURSO, FINALIZADO, CANCELADO) y promotor.
+
+Los datos se guardan en memoria mediante `ProyectoMemoryRepository`.
