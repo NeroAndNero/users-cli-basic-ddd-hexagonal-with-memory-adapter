@@ -4,10 +4,34 @@
  */
 package com.jcaa.udec.collections.application.service;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.jcaa.udec.collections.adapter.persistence.memory.ProyectoMemoryRepository;
+import com.jcaa.udec.collections.domain.core.exception.ProyectoNoEncontradoException;
+import com.jcaa.udec.collections.domain.core.valueobject.ProyectoId;
+import com.jcaa.udec.collections.domain.port.out.ProyectoRepositoryPort;
+import java.time.LocalDate;
+import org.junit.jupiter.api.Test;
 /**
  *
  * @author ASUS
  */
 public class EliminarProyectoServiceTest {
-    
+
+    @Test
+    void eliminaProyectoExistente() {
+        ProyectoRepositoryPort repo = new ProyectoMemoryRepository();
+        new CrearProyectoService(repo).ejecutar(new ProyectoCommand("PRY-001", "ORION",
+                "Plataforma Orion", LocalDate.of(2026, 1, 15), null, "EN_CURSO", "EMP-001"));
+
+        new EliminarProyectoService(repo).ejecutar("PRY-001");
+        assertFalse(repo.existePorId(new ProyectoId("PRY-001")));
+    }
+
+    @Test
+    void lanzaExcepcionSiNoExiste() {
+        EliminarProyectoService servicio = new EliminarProyectoService(new ProyectoMemoryRepository());
+        assertThrows(ProyectoNoEncontradoException.class, () -> servicio.ejecutar("NO-EXISTE"));
+    }    
 }

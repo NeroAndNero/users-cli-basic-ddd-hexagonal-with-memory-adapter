@@ -2,7 +2,15 @@ package com.jcaa.udec.collections.entrypoint.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.jcaa.udec.collections.adapter.persistence.memory.ProyectoMemoryRepository;
+import com.jcaa.udec.collections.application.service.ActualizarProyectoService;
+import com.jcaa.udec.collections.application.service.BuscarProyectoService;
+import com.jcaa.udec.collections.application.service.CrearProyectoService;
+import com.jcaa.udec.collections.application.service.EliminarProyectoService;
+import com.jcaa.udec.collections.application.service.ListarProyectosService;
 import com.jcaa.udec.collections.domain.core.exception.UsuarioNoExisteException;
+import com.jcaa.udec.collections.domain.port.out.ProyectoRepositoryPort;
+import com.jcaa.udec.collections.entrypoint.controller.ProyectoController;
 import com.jcaa.udec.collections.entrypoint.controller.UsuarioControlador;
 import com.jcaa.udec.collections.entrypoint.controller.dto.request.RegistrarUsuarioPeticion;
 import com.jcaa.udec.collections.entrypoint.controller.dto.response.ObtenerUsuarioResponse;
@@ -19,19 +27,19 @@ class GuiCliTest {
     private static final String ID = "123";
     private static final String PASSWORD = "ClaveSegura1!";
     private static final String NOMBRE = "Ana Perez";
-    private static final String EMAIL = "ana_perez@example.com";
+    private static final String EMAIL = "ana.perez@example.com";
 
     @Test
     void deberiaSolicitarOpcionHastaRecibirValorValido() {
         // Arrange
         UsuarioControladorStub controlador = new UsuarioControladorStub();
-        GuiCli guiCli = crearGuiCli(controlador, "texto", "5", "\uFEFF2");
+        GuiCli guiCli = crearGuiCli(controlador, "texto", "6", "\uFEFF2");
 
         // Act
         String salida = capturarSalida(() -> assertThat(guiCli.obtenerOpcionMenu()).isEqualTo(2));
 
         // Assert
-        assertThat(salida).contains("Opcion [texto] invalida", "Opcion [5] invalida");
+        assertThat(salida).contains("Opcion [texto] invalida", "Opcion [6] invalida");
     }
 
     @Test
@@ -49,7 +57,7 @@ class GuiCliTest {
                 NOMBRE,
                 "correo-invalido",
                 EMAIL,
-                "4");
+                "5");
 
         // Act
         String salida = capturarSalida(guiCli::ejecutarAccion);
@@ -76,7 +84,7 @@ class GuiCliTest {
     void deberiaMostrarUsuarioBuscado() {
         // Arrange
         UsuarioControladorStub controlador = new UsuarioControladorStub();
-        GuiCli guiCli = crearGuiCli(controlador, "2", ID, "4");
+        GuiCli guiCli = crearGuiCli(controlador, "2", ID, "5");
 
         // Act
         String salida = capturarSalida(guiCli::ejecutarAccion);
@@ -89,7 +97,7 @@ class GuiCliTest {
     void deberiaInformarCuandoNoHayUsuariosRegistrados() {
         // Arrange
         UsuarioControladorStub controlador = new UsuarioControladorStub();
-        GuiCli guiCli = crearGuiCli(controlador, "3", "4");
+        GuiCli guiCli = crearGuiCli(controlador, "3", "5");
 
         // Act
         String salida = capturarSalida(guiCli::ejecutarAccion);
@@ -103,7 +111,7 @@ class GuiCliTest {
         // Arrange
         UsuarioControladorStub controlador = new UsuarioControladorStub();
         controlador.registrar(new RegistrarUsuarioPeticion(ID, PASSWORD, NOMBRE, EMAIL));
-        GuiCli guiCli = crearGuiCli(controlador, "3", "4");
+        GuiCli guiCli = crearGuiCli(controlador, "3", "5");
 
         // Act
         String salida = capturarSalida(guiCli::ejecutarAccion);
@@ -117,7 +125,7 @@ class GuiCliTest {
         // Arrange
         UsuarioControladorStub controlador = new UsuarioControladorStub();
         controlador.reportarUsuarioInexistente();
-        GuiCli guiCli = crearGuiCli(controlador, "2", ID, "4");
+        GuiCli guiCli = crearGuiCli(controlador, "2", ID, "5");
 
         // Act
         String salida = capturarSalida(guiCli::ejecutarAccion);
@@ -128,7 +136,16 @@ class GuiCliTest {
 
     private static GuiCli crearGuiCli(UsuarioControlador controlador, String... entradas) {
         String contenido = String.join(System.lineSeparator(), entradas) + System.lineSeparator();
-        return new GuiCli(controlador, new Scanner(contenido));
+        Scanner scanner = new Scanner(contenido);
+        ProyectoRepositoryPort repo = new ProyectoMemoryRepository();
+        ProyectoController proyectoController = new ProyectoController(
+                new CrearProyectoService(repo),
+                new BuscarProyectoService(repo),
+                new ActualizarProyectoService(repo),
+                new EliminarProyectoService(repo),
+                new ListarProyectosService(repo));
+        ProyectoCli proyectoCli = new ProyectoCli(proyectoController, scanner);
+        return new GuiCli(controlador, proyectoCli, scanner);
     }
 
     private static String capturarSalida(Runnable accion) {
